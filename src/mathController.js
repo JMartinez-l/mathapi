@@ -1,6 +1,6 @@
 exports.add = (req, res) => {
   const { a, b } = req.body;
-  res.json({ result: a - b });
+  res.json({ result: a + b });
 };
 
 exports.subtract = (req, res) => {
