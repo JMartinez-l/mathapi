@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.npm-cache
+coverage
+dependency-check-report
+.git
+.gitignore
+ci
+README_CERTAMEN.md
+*.Jenkinsfile
