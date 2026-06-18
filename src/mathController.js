@@ -20,3 +20,8 @@ exports.divide = (req, res) => {
   }
   res.json({ result: a / b });
 };
+
+exports.pow = (req, res) => {
+  const { a, b } = req.body;
+  res.json({ result: Math.pow(a, b) });
+};
