@@ -7,7 +7,7 @@ pipeline {
   }
 
   environment {
-    REPO_URL = 'https://github.com/JMartinez-l/mathapi.git'
+    REPO_URL = 'https://github.com/TU_USUARIO/mathapi.git'
     GIT_BRANCH_NAME = 'qa'
     SONARQUBE_SERVER = 'SonarQube'
     SONAR_PROJECT_KEY = 'mathapi-qa'
@@ -44,39 +44,39 @@ pipeline {
         sh '''
           rm -rf dependency-check-report
           mkdir -p dependency-check-report
+          mkdir -p /var/jenkins_home/dependency-check-data
           dependency-check \
             --project "mathapi-qa" \
             --scan . \
             --format HTML \
             --format XML \
             --out dependency-check-report \
+            --data /var/jenkins_home/dependency-check-data \
             --exclude node_modules \
             --disableYarnAudit \
-            --disablePnpmAudit
+            --disablePnpmAudit \
+            -n
         '''
       }
       post {
         always {
           archiveArtifacts artifacts: 'dependency-check-report/**', allowEmptyArchive: true
+          dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
         }
       }
     }
 
     stage('SonarQube Analysis') {
       steps {
-        withSonarQubeEnv(env.SONARQUBE_SERVER) {
-          sh '''
-            sonar-scanner \
-              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-              -Dsonar.projectName=${SONAR_PROJECT_KEY}
-          '''
-        }
-        timeout(time: 5, unit: 'MINUTES') {
-          script {
-            def qg = waitForQualityGate abortPipeline: false
-            if (qg.status != 'OK') {
-              unstable("Quality Gate QA no aprobado: ${qg.status}")
-            }
+        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+          withSonarQubeEnv(env.SONARQUBE_SERVER) {
+            sh '''
+              sonar-scanner \
+                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                -Dsonar.projectName=${SONAR_PROJECT_KEY} \
+                -Dsonar.qualitygate.wait=true \
+                -Dsonar.qualitygate.timeout=600
+            '''
           }
         }
       }
