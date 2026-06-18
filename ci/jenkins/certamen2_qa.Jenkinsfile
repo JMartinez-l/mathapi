@@ -43,6 +43,7 @@ pipeline {
       steps {
         sh '''
           rm -rf dependency-check-report
+          mkdir -p dependency-check-report
           dependency-check \
             --project "mathapi-qa" \
             --scan . \
